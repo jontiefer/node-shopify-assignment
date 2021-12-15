@@ -1,6 +1,6 @@
 # Code Challenge
 
-The goal is to run a function that fetches all Shopify orders for the month of September 2021, calculates a total sum of all the orders' line items, and prints it.
+This repo contains a function that fetches all Shopify orders for the month of September 2021, calculates a total sum of all the orders' number of line items, and prints it.
 
 The correct output is `{ totalNumLineItems: 31 }`.
 
