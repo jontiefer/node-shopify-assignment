@@ -13,7 +13,10 @@
 
 The correct output is `{ totalNumLineItems: 31 }`.
 
-Your goal is to make sure that both `yarn dev` and `yarn start` print the correct output.
+Your goal is to make sure that:
+
+1. `yarn dev` prints the correct output.
+2. `yarn start` prints the correct output. You will encounter a separate bug with this step.
 
 ## API challenge (part B):
 
