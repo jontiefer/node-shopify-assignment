@@ -22,7 +22,7 @@ Your goal is to make sure that:
 
 Create a new file that does the following:
 
-Fetch all orders in the last year containing a variant with SKU `810007181677`. Write out the results in CSV format with `Order ID, First Name, Last Name, Email, Number of items, Date of order, Bundle ID, Fulfillment Status`.
+Fetch all orders in the last four years containing a variant with SKU `HBWIPE60DTC`. Write out the results in CSV format with `Order ID, First Name, Last Name, Email, Number of items, Date of order, Bundle ID, Fulfillment Status`.
 
 Bundle ID can be obtained within the properties of a line item on an order. The property name is `bundle_id`.
 
