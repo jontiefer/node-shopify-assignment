@@ -21,8 +21,12 @@ const main = async () => {
 
   // Retrieves all the orders from the last year filtered by specific SKU.
   const endDate = new Date();
-  const startDate = new Date(endDate.getFullYear() - 1, endDate.getMonth(), endDate.getDay());
-  const ordersList = await shopifyOrders.loadOrdersContainingSKU('810007181677',
+  const startDate = new Date(endDate.getFullYear() - 4, endDate.getMonth(), endDate.getDay());
+
+  const sku = 'HBWIPE60DTC';
+  // const sku = '810007181677';
+
+  const ordersList = await shopifyOrders.loadOrdersContainingSKU(sku,
      startDate, endDate);
 
   //Converts the orders from the javascript object into CSV array.

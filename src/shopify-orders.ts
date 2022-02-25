@@ -24,16 +24,16 @@ export class ShopifyOrders {
     * @returns The total number of orders for the month **/
     public calculateTotalShopifyOrderLineItemsByDate = async (month: number, year: number): Promise<number | undefined> => {
         try {
-            const startDate = new Date(year, month, 1);
-            const endDate = new Date(year, month + 1, 0, 11, 59, 59);
+            const dateRange = { 
+                startDate: new Date(year, month, 1).toISOString(),
+                endDate: new Date(year, month + 1, 0, 11, 59, 59).toISOString()
+            };
 
             const orders = await this.shopifyLib.order.list(            
-                { created_at_min: startDate.toISOString(), created_at_max: endDate.toISOString(), status: 'any' });
+                { created_at_min: dateRange.startDate, created_at_max: dateRange.endDate, status: 'any' });
 
-            let totalNumberLineItems = 0;
-            orders.forEach(o => totalNumberLineItems += o.line_items.length);
-
-            return totalNumberLineItems;
+            return orders.reduce((numLineItems, order) => {
+                return numLineItems + order.line_items.length}, 0);            
         }
         catch (ex) {
             console.log(`Error in calculateTotalShopifyOrderLineItemsByDate function\r\n: ${ex}`);
@@ -56,39 +56,10 @@ export class ShopifyOrders {
                 { created_at_min: startDate.toISOString(), created_at_max: endDate.toISOString(),
                 status: 'any' });        
             
-            const ordersBySku: ShopifyOrderOutputData[] = [];
-
-            /** Retrieves the BundleID for the order embedded in the properties object of the line items of
-             * the order.  BundleID may be stored in bundle_id or parent_bundle_id field of the line item.
-             * BundleID is the same for all line items in the order, so first bundleId discovered will be 
-             * extracted for perfomrance optimization.
-             */
-            const getBundleId = (lineItems: IOrderLineItem[]): string | undefined => {
-                let bundleId: string | undefined;
-                let bundleIdFound = false;
-
-                lineItems.every(li => { li.properties.every((p) => { 
-                        if (p.name === 'bundle_id' || p.name === 'parent_bundle_id') {
-                            bundleId = p.value;
-                            bundleIdFound = true;
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    });
-
-                    if (bundleIdFound)
-                        return false;                    
-                });
-                
-                return bundleId;
-            }
+            const ordersBySku: ShopifyOrderOutputData[] = [];           
             
-            orders.forEach(o => {
-                let skuFound = false;            
-                if(o.line_items.find(li => li.sku === SKU)) skuFound = true;
-
-                if (skuFound) {
+            orders.forEach(o => {                
+                if(o.line_items.some(li => li.sku === SKU)) {                
                     const orderData: ShopifyOrderOutputData = {
                         orderId: o.id,                        
                         firstName: o.customer?.first_name ?? '',
@@ -96,7 +67,7 @@ export class ShopifyOrders {
                         email: o.customer?.email ?? '',
                         numItems: o.line_items.length,
                         orderDate: new Date(o.created_at),
-                        bundleId: getBundleId(o.line_items) ?? '',
+                        bundleId: this.getBundleId(o.line_items) ?? '',
                         fulfillmentStatus: o.fulfillment_status,                    
                     };
 
@@ -113,6 +84,27 @@ export class ShopifyOrders {
 
             return [];
         }
+    }
+
+     /** Retrieves the BundleID for the order embedded in the properties object of the line items of
+     * the order.  BundleID may be stored in bundle_id or parent_bundle_id field of the line item.
+     * BundleID is the same for all line items in the order, so first bundleId discovered will be 
+     * extracted for perfomrance optimization.
+     */
+      private getBundleId = (lineItems: IOrderLineItem[]): string | undefined => {
+        let bundleId: string | undefined;
+        
+        lineItems.some(li => { li.properties.every((p) => { 
+                if (p.name === 'bundle_id' || p.name === 'parent_bundle_id') {
+                    bundleId = p.value;        
+                    return false;
+                }
+                
+                return true;
+            });
+        });
+        
+        return bundleId;
     }
 
     /** Not Used: GraphQL method is complex.  I do not have time to learn Shopify GraphQL API, but 

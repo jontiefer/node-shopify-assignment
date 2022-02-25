@@ -3,43 +3,28 @@ export class CSVGenerator {
 
     }
 
-    /** Will convert an object containing simple data types and generate an array of strings in CSV format  */
-    public static generateCSVArrayFromObjectArray(objectData: {[key: string]: any}[]): string[] {
-        const csvArray: string[] = [];
+    /** Will convert an JSON object and generate a CSV formatted record  */
+    public static generateCSVRecordFromObject(objectData: {[key: string]: any}): string {        
+        const csvRecord: string = Object.values(objectData).reduce((previousVal, currentVal) => {            
+            let fieldData: string;            
 
-        objectData.forEach(data => {
-            let csvRecord = '';
+            if (!currentVal)
+                fieldData = 'NULL';                                        
+            else {
+                fieldData = (currentVal instanceof Date) ?
+                    (currentVal as Date).toLocaleDateString("en-US") :                    
+                    JSON.stringify(currentVal);
+            }
+            
+            return previousVal += `${fieldData}, `;
+        }, '').slice(0, -2);
+        
+        return csvRecord;
+    }
 
-            const objValues = Object.values(data);
-
-            objValues.forEach(value => {
-                let fieldData;
-
-                switch(typeof value) {
-                    case 'object':
-                        if (value instanceof Date) {
-                             fieldData = (value as Date).toLocaleDateString("en-US");
-                        } else {
-                            try {
-                                fieldData = value !== null ? value.toString() : 'NULL';                                                                    
-                            } catch(ex) {
-
-                            }                            
-                        }
-
-                        break;
-                    default:
-                        fieldData = value ?? 'NULL';
-                        break;
-                }
-                
-                csvRecord += `${fieldData}, `;
-            });
-
-            csvRecord = csvRecord.slice(0, -2);
-            csvArray.push(csvRecord);
-        });
-
-        return csvArray;
+    /** Will convert an JSON object array and generate a CSV formatted record string array  */
+    public static generateCSVArrayFromObjectArray(objectDataArray: {[key: string]: any}[]): string[] {        
+        return objectDataArray.map(
+            (objData) => this.generateCSVRecordFromObject(objData));         
     }
 }
